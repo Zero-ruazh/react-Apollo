@@ -1,0 +1,31 @@
+const { gql } = require("apollo-server");
+
+const typeDefs = gql`
+type AllBooks{
+  id:Int
+  name:String
+  numbering:Int
+  sort:String
+  synopsis:String
+}
+input AddBook{
+  name:String!
+  numbering:Int
+  sort:String
+  synopsis:String
+}
+type RemoveBook{
+    id:Int
+}
+type Query {
+    showAllBooks: [AllBooks]
+  }
+
+type Mutation {
+    addBooks(input:AddBook):[AllBooks]
+    removeBooks(id:Int!):RemoveBook
+  }
+
+`;
+
+module.exports =  typeDefs 
