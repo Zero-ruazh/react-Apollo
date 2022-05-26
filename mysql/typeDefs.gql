@@ -1,12 +1,17 @@
 const { gql } = require("apollo-server");
 
 const typeDefs = gql`
-type AllBooks{
+type Books{
   id:Int
   name:String
   numbering:Int
   sort:String
   synopsis:String
+}
+type AddBookResponse{
+  code: Int
+  message:String
+  data:Books
 }
 input AddBook{
   name:String!
@@ -14,16 +19,18 @@ input AddBook{
   sort:String
   synopsis:String
 }
-type RemoveBook{
-    id:Int
+type RemoveBookResponse{
+    id:Int!
+    code: Int
+    message:String
 }
 type Query {
-    showAllBooks: [AllBooks]
+    showAllBooks: [Books]
   }
 
 type Mutation {
-    addBooks(input:AddBook):[AllBooks]
-    removeBooks(id:Int!):RemoveBook
+    addBooks(input:AddBook):AddBookResponse
+    removeBooks(id:Int!):RemoveBookResponse
   }
 
 `;

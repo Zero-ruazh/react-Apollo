@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client";
 function useDataAccess(props) {
-  const { onGetBooksList, inputData } = props;
+  const { onGetBooksList, onBeforeAdd, onAfterAdd } = props;
   const GET_DATA = gql`
     query ShowAllBooks {
       showAllBooks {
@@ -16,10 +16,15 @@ function useDataAccess(props) {
   const ADD_BOOK = gql`
     mutation AddBooks($input: AddBook!) {
       addBooks(input: $input) {
-        name
-        numbering
-        sort
-        synopsis
+        code
+        message
+        data {
+          id
+          name
+          numbering
+          sort
+          synopsis
+        }
       }
     }
   `;
@@ -27,17 +32,20 @@ function useDataAccess(props) {
     mutation removeBooks($id: Int!) {
       removeBooks(id: $id) {
         id
+        code
+        message
       }
     }
   `;
   //查询所有书籍
   const { loading: loadingFetch, refetch } = useQuery(GET_DATA, {
+    fetchPolicy: "no-cache",
+    notifyOnNetworkStatusChange: true,
     onError: (error) => {
       alert(`Submission error! ${error.message}`);
     },
     onCompleted: (res) => {
       const { showAllBooks = [] } = res || {};
-      console.log(res);
       onGetBooksList(showAllBooks);
     },
   });
@@ -57,6 +65,7 @@ function useDataAccess(props) {
     },
     onCompleted: async (res) => {
       await refetch();
+      onAfterAdd();
     },
   });
   //删除书籍
@@ -70,11 +79,12 @@ function useDataAccess(props) {
   });
 
   async function onAddBook() {
-    await addBook({
-      variables: {
-        input: inputData,
-      },
-    });
+    const input = onBeforeAdd();
+    if (input) {
+      await addBook({
+        variables: { input },
+      });
+    }
   }
 
   return {

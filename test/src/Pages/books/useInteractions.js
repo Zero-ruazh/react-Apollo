@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 function useInteractions() {
   // 查询所有书籍
@@ -7,15 +7,21 @@ function useInteractions() {
   function onGetBooksList(value) {
     setBookList(value);
   }
-  // 增加书籍
-  const [inputData, setInputData] = useState({
+  const initialValues = useMemo(() => ({
     name: "",
     numbering: "",
     sort: "",
     synopsis: "",
-  });
-  function onGetInputData(value) {
-    setInputData(value);
+  }));
+  // 增加书籍
+  const [inputData, setInputData] = useState(initialValues);
+
+  function onBeforeAdd() {
+    return inputData;
+  }
+  function onAfterAdd() {
+    //清空输入框的值
+    setInputData(initialValues);
   }
 
   //获取输入框的值
@@ -32,9 +38,10 @@ function useInteractions() {
   return {
     getinput,
     bookList,
-    onGetBooksList,
     inputData,
-    onGetInputData,
+    onGetBooksList,
+    onBeforeAdd,
+    onAfterAdd,
   };
 }
 export default useInteractions;
