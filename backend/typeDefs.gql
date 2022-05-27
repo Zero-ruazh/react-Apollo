@@ -20,12 +20,18 @@ input AddBook{
   synopsis:String
 }
 type RemoveBookResponse{
-    id:Int!
+    data:Books
     code: Int
     message:String
 }
+input PageData{
+  page:Int
+  rowsPerPage:Int
+}
+
 type Query {
     showAllBooks: [Books]
+    cutPageShowBooks(cutPage:PageData): [Books]
   }
 
 type Mutation {

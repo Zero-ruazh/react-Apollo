@@ -1,10 +1,27 @@
 import { gql } from "@apollo/client";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 function useDataAccess(props) {
-  const { onGetBooksList, onBeforeAdd, onAfterAdd } = props;
+  const {
+    onGetBooksList,
+    onBeforeAdd,
+    onAfterAdd,
+    onBeforeCutPage,
+    onShowBooksList,
+  } = props;
   const GET_DATA = gql`
     query ShowAllBooks {
       showAllBooks {
+        id
+        name
+        numbering
+        sort
+        synopsis
+      }
+    }
+  `;
+  const CUTPAGE_BOOK = gql`
+    query CutPageShowBooks($cutPage: PageData) {
+      cutPageShowBooks(cutPage: $cutPage) {
         id
         name
         numbering
@@ -31,13 +48,15 @@ function useDataAccess(props) {
   const REMOVE_BOOK = gql`
     mutation removeBooks($id: Int!) {
       removeBooks(id: $id) {
-        id
+        data {
+          id
+        }
         code
         message
       }
     }
   `;
-  //查询所有书籍
+  //Search all books
   const { loading: loadingFetch, refetch } = useQuery(GET_DATA, {
     fetchPolicy: "no-cache",
     notifyOnNetworkStatusChange: true,
@@ -49,17 +68,23 @@ function useDataAccess(props) {
       onGetBooksList(showAllBooks);
     },
   });
-  //增加书籍
-  const [addBook, { loading: loadingAddBook }] = useMutation(ADD_BOOK, {
-    variables: {
-      input: {
-        name: "placeholder",
-        numbering: "placeholder",
-        sort: "placeholder",
-        synopsis: "placeholder",
-        someOtherVariable: 1234,
+  //Paging Search Books
+  const [cutPageShowBooks, { loading: loadingCutPageBook }] = useLazyQuery(
+    CUTPAGE_BOOK,
+    {
+      fetchPolicy: "no-cache",
+      notifyOnNetworkStatusChange: true,
+      onError: (error) => {
+        alert(`Submission error! ${error.message}`);
       },
-    },
+      onCompleted: (res) => {
+        const { cutPageShowBooks = [] } = res || {};
+        onShowBooksList(cutPageShowBooks);
+      },
+    }
+  );
+  //Add Books
+  const [addBook, { loading: loadingAddBook }] = useMutation(ADD_BOOK, {
     onError: (error) => {
       alert(`Submission error! ${error.message}`);
     },
@@ -68,7 +93,7 @@ function useDataAccess(props) {
       onAfterAdd();
     },
   });
-  //删除书籍
+  //Delete Books
   const [onRemoveBook, { loading: loadingRemove }] = useMutation(REMOVE_BOOK, {
     onError: (error) => {
       alert(`Submission error! ${error.message}`);
@@ -87,10 +112,26 @@ function useDataAccess(props) {
     }
   }
 
+  async function onCutPageShowBooks() {
+    const { page, rowsPerPage } = onBeforeCutPage();
+    if (rowsPerPage) {
+      await cutPageShowBooks({
+        variables: {
+          cutPage: {
+            page: page * rowsPerPage,
+            rowsPerPage: rowsPerPage,
+          },
+        },
+      });
+    }
+  }
+
   return {
-    loading: loadingFetch || loadingAddBook || loadingRemove,
+    loading:
+      loadingFetch || loadingAddBook || loadingRemove || loadingCutPageBook,
     onAddBook,
     onRemoveBook,
+    onCutPageShowBooks,
   };
 }
 

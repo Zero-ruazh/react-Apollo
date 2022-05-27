@@ -14,7 +14,7 @@ require("dotenv").config();
 
   const resolvers = {
     Query: {
-      // 查询所有书籍
+      // Search all books
       showAllBooks: async () => {
         try {
           const [rows] = await sql.execute("select * from library");
@@ -23,9 +23,23 @@ require("dotenv").config();
           throw error;
         }
       },
+      //Paging Search Books
+      cutPageShowBooks: async (_, args) => {
+        try {
+          const { cutPage } = args;
+          const pageData = [cutPage.page, cutPage.rowsPerPage];
+          const [rows] = await sql.execute(
+            "select * from library limit ?, ?",
+            pageData
+          );
+          return rows;
+        } catch (error) {
+          throw error;
+        }
+      },
     },
     Mutation: {
-      // 增加书籍
+      // Add Books
       addBooks: async (_, args) => {
         try {
           const { input } = args;
@@ -49,7 +63,7 @@ require("dotenv").config();
           throw error;
         }
       },
-      //删除书籍
+      //Delete Books
       removeBooks: async (_, args) => {
         try {
           const { id } = args;
@@ -57,7 +71,7 @@ require("dotenv").config();
             id,
           ]);
           return {
-            id,
+            data: { id },
             code: 200,
             message: "Success",
           };
