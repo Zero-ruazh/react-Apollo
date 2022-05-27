@@ -63,7 +63,8 @@ function Books() {
             onChange={(e) => {
               onGetInput(e, "name");
             }}
-          />{" "}
+          />
+          &nbsp;
           <TextField
             id="numbering"
             size="small"
@@ -73,7 +74,8 @@ function Books() {
             onChange={(e) => {
               onGetInput(e, "numbering");
             }}
-          />{" "}
+          />
+          &nbsp;
           <TextField
             id="sort"
             size="small"
@@ -83,7 +85,8 @@ function Books() {
             onChange={(e) => {
               onGetInput(e, "sort");
             }}
-          />{" "}
+          />
+          &nbsp;
           <TextField
             id="synopsis"
             size="small"
@@ -94,6 +97,7 @@ function Books() {
               onGetInput(e, "synopsis");
             }}
           />
+          &nbsp;
           <Button variant="outlined" type="submit">
             增加书籍
           </Button>
